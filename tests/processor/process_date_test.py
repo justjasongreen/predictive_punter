@@ -20,8 +20,8 @@ class CountingProcessor(predictive_punter.Processor):
 
         self.counter = {}
 
-        self.pre_process_date = self.pre_process_meet = self.pre_process_entity
-        self.post_process_date = self.post_process_meet = self.post_process_entity
+        self.pre_process_date = self.pre_process_meet = self.pre_process_race = self.pre_process_entity
+        self.post_process_date = self.post_process_meet = self.post_process_race = self.post_process_entity
 
     def increment_counter(self, entity, phase):
         """Increment the counter for the entity type"""
@@ -87,3 +87,9 @@ def test_meets(processor):
     """The process_date method should call the pre/post_process_meet method the expected number of times"""
 
     assert processor.counter[racing_data.Meet]['pre'] == processor.counter[racing_data.Meet]['post'] == 2
+
+
+def test_races(processor):
+    """The process_date method should call the pre/post_process_race method the expected number of times"""
+
+    assert processor.counter[racing_data.Race]['pre'] == processor.counter[racing_data.Race]['post'] == 8 + 8
