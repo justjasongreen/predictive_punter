@@ -20,8 +20,8 @@ class CountingProcessor(predictive_punter.Processor):
 
         self.counter = {}
 
-        self.pre_process_date = self.pre_process_meet = self.pre_process_race = self.pre_process_entity
-        self.post_process_date = self.post_process_meet = self.post_process_race = self.post_process_entity
+        self.pre_process_date = self.pre_process_meet = self.pre_process_race = self.pre_process_runner = self.pre_process_entity
+        self.post_process_date = self.post_process_meet = self.post_process_race = self.post_process_runner = self.post_process_entity
 
     def increment_counter(self, entity, phase):
         """Increment the counter for the entity type"""
@@ -77,6 +77,12 @@ def processor():
     return processor
 
 
+@pytest.fixture(scope='module')
+def runner_count():
+
+    return 11 + 14 + 14 + 15 + 10 + 17 + 11 + 15 + 8 + 9 + 11 + 9 + 11 + 10 + 13 + 16
+
+
 def test_dates(processor):
     """The process_date method should call the pre/post_process_date method the expected number of times"""
 
@@ -93,3 +99,9 @@ def test_races(processor):
     """The process_date method should call the pre/post_process_race method the expected number of times"""
 
     assert processor.counter[racing_data.Race]['pre'] == processor.counter[racing_data.Race]['post'] == 8 + 8
+
+
+def test_runners(processor, runner_count):
+    """The process_date method should call the pre/post_process_runner method the expected number of times"""
+
+    assert processor.counter[racing_data.Runner]['pre'] == processor.counter[racing_data.Runner]['post'] == runner_count

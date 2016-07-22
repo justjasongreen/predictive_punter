@@ -15,7 +15,13 @@ class Processor:
     def must_process_races(self):
         """Return True if this processor instance must process races or any other associated entities"""
 
-        return hasattr(self, 'pre_process_race') or hasattr(self, 'post_process_race')
+        return hasattr(self, 'pre_process_race') or hasattr(self, 'post_process_race') or self.must_process_runners
+
+    @property
+    def must_process_runners(self):
+        """Return True if this processor instance must process runners or any other associated entities"""
+
+        return hasattr(self, 'pre_process_runner') or hasattr(self, 'post_process_runner')
 
     def process_date(self, date):
         """Process the specified date"""
@@ -49,5 +55,18 @@ class Processor:
         if hasattr(self, 'pre_process_race'):
             self.pre_process_race(race)
 
+        if self.must_process_runners:
+            for runner in self.provider.get_runners_by_race(race):  # TODO: race.runners
+                self.process_runner(runner)
+
         if hasattr(self, 'post_process_race'):
             self.post_process_race(race)
+
+    def process_runner(self, runner):
+        """Process the specified runner"""
+
+        if hasattr(self, 'pre_process_runner'):
+            self.pre_process_runner(runner)
+
+        if hasattr(self, 'post_process_runner'):
+            self.post_process_runner(runner)
