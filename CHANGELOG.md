@@ -17,4 +17,5 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Set up project (from @justjasongreen)
 
 
+[Unreleased]: https://github.com/justjasongreen/predictive_punter/compare/1.0.0a0...HEAD
 [1.0.0a0]: https://github.com/justjasongreen/predictive_punter/tree/1.0.0a0
