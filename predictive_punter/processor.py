@@ -35,6 +35,12 @@ class Processor:
 
         return hasattr(self, 'process_jockey')
 
+    @property
+    def must_process_trainers(self):
+        """Return True if this processor instance must process trainers"""
+
+        return hasattr(self, 'process_trainer')
+
     def process_date(self, date):
         """Process the specified date"""
 
@@ -85,6 +91,9 @@ class Processor:
 
         if self.must_process_jockeys:
             self.process_jockey(self.provider.get_jockey_by_runner(runner))
+
+        if self.must_process_trainers:
+            self.process_trainer(self.provider.get_trainer_by_runner(runner))
 
         if hasattr(self, 'post_process_runner'):
             self.post_process_runner(runner)

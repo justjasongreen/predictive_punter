@@ -51,6 +51,11 @@ class CountingProcessor(predictive_punter.Processor):
 
         self.increment_counter(racing_data.Jockey(self.provider, None) if jockey is None else jockey, 'process')
 
+    def process_trainer(self, trainer):
+        """Increment the process phase counter for the Trainer type"""
+
+        self.increment_counter(racing_data.Trainer(self.provider, None) if trainer is None else trainer, 'process')
+
 
 @pytest.fixture(scope='module')
 def processor():
@@ -122,3 +127,9 @@ def test_jockeys(processor, runner_count):
     """The process_date method should call the process_jockey method the expected number of times"""
 
     assert processor.counter[racing_data.Jockey]['process'] == runner_count
+
+
+def test_trainers(processor, runner_count):
+    """The process_date method should call the process_trainer method the expected number of times"""
+
+    assert processor.counter[racing_data.Trainer]['process'] == runner_count
