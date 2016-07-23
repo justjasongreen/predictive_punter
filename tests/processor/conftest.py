@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 
 import cache_requests
 from lxml import html
@@ -32,7 +33,7 @@ def processor():
 
     html_parser = html.fromstring
 
-    scraper = punters_client.Scraper(http_client, html_parser)
+    scraper = punters_client.Scraper(http_client, html_parser, concurrent_requests=os.cpu_count() * 5)
 
     provider = racing_data.Provider(database, scraper)
 
@@ -40,14 +41,6 @@ def processor():
 
 
 @pytest.fixture(scope='session')
-def process_date(processor):
-
-    processor.reset_counter()
-    processor.process_date(datetime(2016, 2, 1))
-
-
-@pytest.fixture(scope='session')
 def process_dates(processor):
 
-    processor.reset_counter()
     processor.process_dates(datetime(2016, 2, 1), datetime(2016, 2, 2))

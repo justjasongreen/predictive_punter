@@ -9,7 +9,7 @@ class CountingProcessor(predictive_punter.Processor):
 
         super(CountingProcessor, self).__init__(*args, **kwargs)
 
-        self.counter = {}
+        self.counter = dict()
 
         self.pre_process_date = self.pre_process_meet = self.pre_process_race = self.pre_process_runner = self.pre_process_horse = self.pre_process_entity
         self.post_process_date = self.post_process_meet = self.post_process_race = self.post_process_runner = self.post_process_horse = self.post_process_entity
@@ -26,11 +26,6 @@ class CountingProcessor(predictive_punter.Processor):
             self.counter[entity_type][phase] = 0
 
         self.counter[entity_type][phase] += 1
-
-    def reset_counter(self):
-        """Reset the counter to an empty dictionary"""
-
-        self.counter = {}
 
     def pre_process_entity(self, entity):
         """Increment the pre phase counter for the specified entity's type"""
