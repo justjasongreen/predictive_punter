@@ -1,5 +1,7 @@
 import concurrent.futures
 
+from .date_utils import *
+
 
 class Processor:
     """Abstract class to implement processing of racing entities in a standardised way"""
@@ -60,6 +62,12 @@ class Processor:
             for future in concurrent.futures.as_completed(futures):
                 if future.exception() is not None:
                     raise future.exception()
+
+    def process_dates(self, date_from, date_to):
+        """Process all dates in the specified range"""
+
+        for date in dates(date_from, date_to):
+            self.process_date(date)
 
     def process_date(self, date):
         """Process the specified date"""

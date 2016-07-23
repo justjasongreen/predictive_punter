@@ -1,95 +1,7 @@
 from datetime import datetime
 
-import cache_requests
-from lxml import html
-import predictive_punter
-import punters_client
-import pymongo
 import pytest
 import racing_data
-import redis
-import requests
-
-
-class CountingProcessor(predictive_punter.Processor):
-    """A concrete implementation of Processor that simply counts calls to pre/post_process methods"""
-
-    def __init__(self, *args, **kwargs):
-
-        super(CountingProcessor, self).__init__(*args, **kwargs)
-
-        self.counter = {}
-
-        self.pre_process_date = self.pre_process_meet = self.pre_process_race = self.pre_process_runner = self.pre_process_horse = self.pre_process_entity
-        self.post_process_date = self.post_process_meet = self.post_process_race = self.post_process_runner = self.post_process_horse = self.post_process_entity
-
-    def increment_counter(self, entity, phase):
-        """Increment the counter for the entity type"""
-
-        entity_type = entity.__class__
-
-        if entity_type not in self.counter:
-            self.counter[entity_type] = {}
-
-        if phase not in self.counter[entity_type]:
-            self.counter[entity_type][phase] = 0
-
-        self.counter[entity_type][phase] += 1
-
-    def pre_process_entity(self, entity):
-        """Increment the pre phase counter for the specified entity's type"""
-
-        self.increment_counter(entity, 'pre')
-
-    def post_process_entity(self, entity):
-        """Increment the post phase counter for the specified entity's type"""
-
-        self.increment_counter(entity, 'post')
-
-    def process_jockey(self, jockey):
-        """Increment the process phase counter for the Jockey type"""
-
-        self.increment_counter(racing_data.Jockey(self.provider, None) if jockey is None else jockey, 'process')
-
-    def process_trainer(self, trainer):
-        """Increment the process phase counter for the Trainer type"""
-
-        self.increment_counter(racing_data.Trainer(self.provider, None) if trainer is None else trainer, 'process')
-
-    def process_performance(self, performance):
-        """Increment the process phase counter for the Performance type"""
-
-        self.increment_counter(performance, 'process')
-
-
-@pytest.fixture(scope='module')
-def processor():
-
-    database_uri = 'mongodb://localhost:27017/predictive_punter_test'
-    database_name = database_uri.split('/')[-1]
-    database_client = pymongo.MongoClient(database_uri)
-    database_client.drop_database(database_name)
-    database = database_client.get_default_database()
-
-    http_client = None
-    try:
-        http_client = cache_requests.Session(connection=redis.fromurl('redis://localhost:6379/predictive_punter_test'))
-    except BaseException:
-        try:
-            http_client = cache_requests.Session()
-        except BaseException:
-            http_client = requests.Session()
-
-    html_parser = html.fromstring
-
-    scraper = punters_client.Scraper(http_client, html_parser)
-
-    provider = racing_data.Provider(database, scraper)
-
-    processor = CountingProcessor(provider)
-    processor.process_date(datetime(2016, 2, 1))
-
-    return processor
 
 
 @pytest.fixture(scope='module')
@@ -98,49 +10,49 @@ def runner_count():
     return 11 + 14 + 14 + 15 + 10 + 17 + 11 + 15 + 8 + 9 + 11 + 9 + 11 + 10 + 13 + 16
 
 
-def test_dates(processor):
+def test_dates(processor, process_date):
     """The process_date method should call the pre/post_process_date method the expected number of times"""
 
     assert processor.counter[datetime]['pre'] == processor.counter[datetime]['post'] == 1
 
 
-def test_meets(processor):
+def test_meets(processor, process_date):
     """The process_date method should call the pre/post_process_meet method the expected number of times"""
 
     assert processor.counter[racing_data.Meet]['pre'] == processor.counter[racing_data.Meet]['post'] == 2
 
 
-def test_races(processor):
+def test_races(processor, process_date):
     """The process_date method should call the pre/post_process_race method the expected number of times"""
 
     assert processor.counter[racing_data.Race]['pre'] == processor.counter[racing_data.Race]['post'] == 8 + 8
 
 
-def test_runners(processor, runner_count):
+def test_runners(processor, process_date, runner_count):
     """The process_date method should call the pre/post_process_runner method the expected number of times"""
 
     assert processor.counter[racing_data.Runner]['pre'] == processor.counter[racing_data.Runner]['post'] == runner_count
 
 
-def test_horses(processor, runner_count):
+def test_horses(processor, process_date, runner_count):
     """The process_date method should call the pre/post_process_horse method the expected number of times"""
 
     assert processor.counter[racing_data.Horse]['pre'] == processor.counter[racing_data.Horse]['post'] == runner_count
 
 
-def test_jockeys(processor, runner_count):
+def test_jockeys(processor, process_date, runner_count):
     """The process_date method should call the process_jockey method the expected number of times"""
 
     assert processor.counter[racing_data.Jockey]['process'] == runner_count
 
 
-def test_trainers(processor, runner_count):
+def test_trainers(processor, process_date, runner_count):
     """The process_date method should call the process_trainer method the expected number of times"""
 
     assert processor.counter[racing_data.Trainer]['process'] == runner_count
 
 
-def test_performances(processor):
+def test_performances(processor, process_date):
     """The process_date method should call the process_performance method the expected number of times"""
 
     assert processor.counter[racing_data.Performance]['process'] > 0
