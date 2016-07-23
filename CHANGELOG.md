@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [Unreleased]
+
+### Added
+- Processor class to facilitate asynchronous racing data processing (from @justjasongreen)
+
+
 ## [1.0.0a0] - 2016-07-22
 
 ### Added
