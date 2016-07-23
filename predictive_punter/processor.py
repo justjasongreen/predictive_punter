@@ -1,3 +1,6 @@
+import concurrent.futures
+
+
 class Processor:
     """Abstract class to implement processing of racing entities in a standardised way"""
 
@@ -47,6 +50,17 @@ class Processor:
 
         return hasattr(self, 'process_performance')
 
+    def process_collection(self, collection, target):
+        """Asynchronously all items in the specified collection via the specified target"""
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+
+            futures = [executor.submit(target, item) for item in collection]
+
+            for future in concurrent.futures.as_completed(futures):
+                if future.exception() is not None:
+                    raise future.exception()
+
     def process_date(self, date):
         """Process the specified date"""
 
@@ -54,8 +68,7 @@ class Processor:
             self.pre_process_date(date)
 
         if self.must_process_meets:
-            for meet in self.provider.get_meets_by_date(date):
-                self.process_meet(meet)
+            self.process_collection(self.provider.get_meets_by_date(date), self.process_meet)
 
         if hasattr(self, 'post_process_date'):
             self.post_process_date(date)
@@ -67,8 +80,7 @@ class Processor:
             self.pre_process_meet(meet)
 
         if self.must_process_races:
-            for race in meet.races:
-                self.process_race(race)
+            self.process_collection(meet.races, self.process_race)
 
         if hasattr(self, 'post_process_meet'):
             self.post_process_meet(meet)
@@ -80,8 +92,7 @@ class Processor:
             self.pre_process_race(race)
 
         if self.must_process_runners:
-            for runner in race.runners:
-                self.process_runner(runner)
+            self.process_collection(race.runners, self.process_runner)
 
         if hasattr(self, 'post_process_race'):
             self.post_process_race(race)
@@ -111,8 +122,7 @@ class Processor:
             self.pre_process_horse(horse)
 
         if self.must_process_performances:
-            for performance in horse.performances:
-                self.process_performance(performance)
+            self.process_collection(horse.performances, self.process_performance)
 
         if hasattr(self, 'post_process_horse'):
             self.post_process_horse(horse)
