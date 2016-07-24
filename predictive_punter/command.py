@@ -122,9 +122,10 @@ class Command:
 
             futures = [process_item(item) for item in collection]
 
-            for future in concurrent.futures.as_completed(futures):
-                if future.exception() is not None:
-                    raise future.exception()
+            if len(futures) > 0:
+                for future in concurrent.futures.as_completed(futures):
+                    if future.exception() is not None:
+                        raise future.exception()
 
     def process_dates(self, date_from, date_to):
         """Process all racing data for the specified date range"""
@@ -159,9 +160,14 @@ class Command:
     def process_runner(self, runner):
         """Process the specified runner"""
 
-        log_time('processing {horse}'.format(horse=runner.horse), self.process_horse, runner.horse)
-        log_time('processing {jockey}'.format(jockey=runner.jockey), self.process_jockey, runner.jockey)
-        log_time('processing {trainer}'.format(trainer=runner.trainer), self.process_trainer, runner.trainer)
+        if runner.horse is not None:
+            log_time('processing {horse}'.format(horse=runner.horse), self.process_horse, runner.horse)
+
+        if runner.jockey is not None:
+            log_time('processing {jockey}'.format(jockey=runner.jockey), self.process_jockey, runner.jockey)
+
+        if runner.trainer is not None:
+            log_time('processing {trainer}'.format(trainer=runner.trainer), self.process_trainer, runner.trainer)
 
     def process_horse(self, horse):
         """Process the specified horse"""
