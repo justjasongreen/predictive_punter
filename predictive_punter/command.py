@@ -171,14 +171,14 @@ class Command:
     def process_jockey(self, jockey):
         """Process the specified jockey"""
 
-        pass
+        return None
 
     def process_trainer(self, trainer):
         """Process the specified trainer"""
 
-        pass
+        return None
 
     def process_performance(self, performance):
         """Process the specified performance"""
 
-        pass
+        return None
