@@ -108,21 +108,22 @@ class Command:
     def process_collection(self, collection, target):
         """Asynchronously process all items in collection via target"""
 
-        with concurrent.futures.ThreadPoolExecutor() as executor:
+        if len(collection) > 0:
 
-            def process_item(item, retry_count=0, max_retries=5):
-                try:
-                    return executor.submit(log_time, 'processing {item}'.format(item=item), target, item)
-                except RuntimeError:
-                    if retry_count < max_retries:
-                        time.sleep(1)
-                        return process_item(item, retry_count + 1, max_retries)
-                    else:
-                        raise
+            with concurrent.futures.ThreadPoolExecutor() as executor:
 
-            futures = [process_item(item) for item in collection]
+                def process_item(item, retry_count=0, max_retries=5):
+                    try:
+                        return executor.submit(log_time, 'processing {item}'.format(item=item), target, item)
+                    except RuntimeError:
+                        if retry_count < max_retries:
+                            time.sleep(1)
+                            return process_item(item, retry_count + 1, max_retries)
+                        else:
+                            raise
 
-            if len(futures) > 0:
+                futures = [process_item(item) for item in collection]
+
                 for future in concurrent.futures.as_completed(futures):
                     if future.exception() is not None:
                         raise future.exception()
